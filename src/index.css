@@ -31,6 +31,6 @@
   }
 
   .btn {
-      @apply text-xl text-center bg-[#C31192] text-slate-200 hover:bg-slate-200 hover:text-[#C31192] rounded-md px-5 py-3;
+      @apply text-xl text-center bg-[#C31192] text-slate-200 hover:bg-slate-200 hover:text-[#C31192] rounded-md px-5 py-2;
   }
 }

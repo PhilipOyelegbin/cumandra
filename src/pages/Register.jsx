@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios'
 import { FormInput } from "../components/FormEntry";
 import signup from '../assets/signup.png';
 
 const Register = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [regError, setRegerror] = useState(false);
+    const [errormsg, setErrormsg] = useState(false);
     const [show, setShow] = useState(false);
     const [user, setUser] = useState({
         username: "", first_name: "", last_name: "", email: "", password: "", cpassword: ""
@@ -18,32 +19,24 @@ const Register = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setRegerror(false);
-        if (user?.username === "" || user.username.includes(" ")) {
-            setRegerror('username cannot be empty and should not include space')
-        } else if (user?.first_name === "") {
-            setRegerror('First name cannot be empty')
-        } else if (user?.last_name === "") {
-            setRegerror('Last name cannot be empty')
-        } else if (user?.email === "") {
-            setRegerror('Email cannot be empty')
-        } else if (user?.password === "" || user.password.length < 6) {
-            setRegerror('Password cannot be empty and must be at least 6 characters')
-        } else if (user?.cpassword !== user.password) {
-            setRegerror('Password does not match')
+        setErrormsg(false);
+        if (user?.cpassword !== user.password) {
+            setErrormsg('Password does not match')
         } else {
             setLoading(true)
-            let newUser = [{username: user.username, first_name: user.first_name, last_name: user.last_name, email: user.email, password: user.password, cpassword: user.cpassword}];
-            fetch("https://api.steinhq.com/v1/storages/6308a9527bccea08c11432cb/Sheet1", {
-                method: "POST", content: "application/json", body: JSON.stringify(newUser)
-            }).then(()=> {
-                setLoading(false); setStoreddata(newUser); navigate('/login');
-            }).catch(err => {
-                setLoading(false); err && setError("Unable to register user")
-            })
+            const createData = async () => {
+                try {
+                    let newUser = {username: user.username, first_name: user.first_name, last_name: user.last_name, email: user.email, password: user.password};
+                    await axios.post("https://cumandra-api.herokuapp.com/signup/", newUser);
+                    setLoading(false); setStoreddata(newUser); navigate('/login');
+                } catch (error) {
+                    setLoading(false); error?.message && setError("Unable to register data");
+                }
+            };
+            createData();
         }
     };
-
+    // setError("Unable to register user")
     const handleChange = (e) => {
         const {value, name} = e.target
         setUser({...user, [name]: value})
@@ -68,11 +61,11 @@ const Register = () => {
         <section className="flex flex-row justify-between items-center p-5">
             <form onSubmit={handleSubmit} autoComplete="off" className="p-5 w-full md:p-10 md:w-1/2 animate__animated animate__lightSpeedInLeft animate__slow">
                 <h3 className="text-xl text-center font-semibold">Create an account</h3>
-                <FormInput label="Username" type="text" name="username" value={user.username} onchange={handleChange} placeholder="Enter Username"/>
-                <FormInput label="First name" type="text" name="first_name" value={user.first_name} onchange={handleChange} placeholder="Enter first name"/>
-                <FormInput label="Last name" type="text" name="last_name" value={user.last_name} onchange={handleChange} placeholder="Enter last name"/>
-                <FormInput label="Email" type="email" name="email" value={user.email} onchange={handleChange} placeholder="example@mail.com"/>
-                <FormInput label="Password" type={`${show ? "text" : "password"}`} name="password" value={user.password} onchange={handleChange} placeholder="xxxxxx"/>
+                <FormInput label="Username" type="text" name="username" value={user.username} onchange={handleChange} placeholder="Enter Username" required/>
+                <FormInput label="First name" type="text" name="first_name" value={user.first_name} onchange={handleChange} placeholder="Enter first name" required/>
+                <FormInput label="Last name" type="text" name="last_name" value={user.last_name} onchange={handleChange} placeholder="Enter last name" required/>
+                <FormInput label="Email" type="email" name="email" value={user.email} onchange={handleChange} placeholder="example@mail.com" required/>
+                <FormInput label="Password" type={`${show ? "text" : "password"}`} name="password" value={user.password} onchange={handleChange} placeholder="xxxxxx" required/>
                 <FormInput label="Confirm Password" type={`${show ? "text" : "password"}`} name="cpassword" value={user.cpassword} onchange={handleChange} placeholder="xxxxxx"/>
                 {/* <div className='flex items-center gap-1 my-3'>
                     <input className='w-auto' type="checkbox" name='Terms' checked={user.Terms} onChange={handleChange} />
@@ -84,7 +77,7 @@ const Register = () => {
                     <label htmlFor="show">Show password</label>
                 </div>
 
-                {regError ? <p className='text-center text-yellow-500 my-3'>{regError}</p> : loading ? <p className='text-center text-white my-3'>Loading...</p> : error ? <p className='text-center text-yellow-500 my-3'>{error}</p> : storeddata }
+                {errormsg ? <p className='text-center text-red-400 my-3'>{errormsg}</p> : loading ? <p className='text-center text-white my-3'>Loading...</p> : error ? <p className='text-center text-red-400 my-3'>{error}</p> : storeddata }
 
                 <button type="submit" className="btn">Submit</button>
 

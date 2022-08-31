@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAxiosGet } from '../hooks/useAxiosAsync';
 import { FormInput} from '../components/FormEntry';
 import hero from '..//assets/hero.png'
 
 const Home = () => {
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(false)
-    const [articles, setArticles] = useState(null)
+    const url = "/list/"
+    const {loading, error, data: articles} = useAxiosGet(url)
 
     const navigate = useNavigate();
     
@@ -18,20 +17,6 @@ const Home = () => {
         e.preventDefault();
         setLoading(true)
     }
-
-    useEffect(() => {
-        fetch("https://api.steinhq.com/v1/storages/6308a9527bccea08c11432cb/Sheet2")
-            .then((res) => res.json())
-            .then(data => {
-                setLoading(false); setArticles(data)
-            })
-            .catch(err => {
-                setLoading(false); err && setError("Unable to load articles")
-            })
-    }, [])
-
-    console.log(articles);
-    
 
   return (
     <>
@@ -52,7 +37,8 @@ const Home = () => {
             <h2 className='text-3xl text-center font-bold'>Curated Articles Just For You!</h2>
             <div className='grid grid-cols-1 gap-5 p-2 md:grid-cols-2 lg:grid-cols-3 mt-5'>
                 {loading ? (<h2 className='text-2xl text-center'>Loading...</h2>) : error ? (<h2 className='text-2xl text-center'>{error}</h2>) : articles && articles?.map(article => {
-                return (<figure className='flex flex-col hover:-translate-y-2 duration-300' key={article.title}>
+                return (
+                    <figure className='flex flex-col hover:-translate-y-2 duration-300' key={article.title}>
                             <img className='rounded-t-2xl' src={article.image || "cover-image"} alt="cover_image" />
                             <figcaption className='bg-slate-500 px-3 py-5 rounded-b-2xl'>
                                 <h3 className='text-xl font-bold'><span className='text-[#C31192]'>{article.author || "Unknown"}</span> - {article.title || "Unknown"}</h3>
@@ -60,8 +46,8 @@ const Home = () => {
                                 {/* <p className='mb-5'>Comments:<span className='rounded-full bg-rose-500 text-white px-2 py-1 ml-1'>{article.comments_count}</span></p> */}
                                 <Link to={article.url || "#"} className='btn w-36 text-center'>Read more</Link>
                             </figcaption>
-                        </figure>)
-                    })
+                    </figure>
+                    )})
                 }
             </div>
         </section>

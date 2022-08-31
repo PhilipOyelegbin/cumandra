@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 import { FormInput, FormMultiText } from "../components/FormEntry";
 import write from "../assets/writer.png";
 
 const Create = () => {
-    const [errormsg, setErrormsg] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
     const [writer, setWriter] = useState({
@@ -17,30 +17,27 @@ const Create = () => {
 
     const handleSave = (e) => {
         e.preventDefault();
-        setLoading(true)
-        if (writer.image === "" || writer.image.includes(" ")) {
-            setErrormsg("Image URL cannot be empty and should not include space")
-        } else if (writer.author === "") {
-            setErrormsg("Author's name cannot be empty")
-        } else if (writer.title === "") {
-            setErrormsg("Title cannot be empty")
-        } else if (writer.content === "") {
-            setErrormsg("Content cannot be empty")
-        } else {
-            let newArticle = [{image: writer.image, author: writer.author, title: writer.title, content: writer.content}]
-            fetch("https://api.steinhq.com/v1/storages/6308a9527bccea08c11432cb/Sheet2", {
-                method: "POST", content: "application/json", body: JSON.stringify(newArticle)
-            }).then(()=> {
-                setLoading(false); setArticle(newArticle); navigate('/');
-            }).catch(err => {
-                setLoading(false); err && setError("Unable to save article")
-            })
-        }
+        setLoading(true);
+        const createArticle = async () => {
+            try {
+                let newArticle = {image: writer.image, author: writer.author, title: writer.title, content: writer.content};
+                await axios.post("https://cumandra-api.herokuapp.com/create/", newArticle);
+                setLoading(false); setArticle(newArticle);
+            } catch (error) {
+                setLoading(false); error?.message && setError("Unable to create article");
+            }
+        };
+        createArticle();
     };
-
+    
     const handleChange = (e) => {
         setWriter({...writer, [e.target.name] : e.target.value});
     };
+
+    const handleLogout = () => {
+        navigate('/login');
+        sessionStorage.removeItem('username');
+    }
 
     useEffect(() => {
         document.title = 'Cumandra - Create Blog';
@@ -59,14 +56,15 @@ const Create = () => {
 
         <section className='flex flex-row justify-between items-center p-5'>
             <form onSubmit={handleSave} autoComplete="off" className='p-5 w-full md:p-10 md:w-1/2 animate__animated animate__lightSpeedInLeft animate__slow'>
-                <FormInput label="Enter image URL" name="image" type="url" value={writer.image} onchange={handleChange} placeholder="https://"/>
-                <FormInput label="Author" name="author" type="text" value={writer.author} onchange={handleChange} placeholder="Enter author name"/>
-                <FormInput label="Title" name="title" type="text" value={writer.title} onchange={handleChange} placeholder="Enter article title"/>
-                <FormMultiText label="Article" name="content" value={writer.content} onchange={handleChange} placeholder="Write your article here..."/>
+                <FormInput label="Upload cover image" name="image" type="file" accept="image/*" value={writer.image} onchange={handleChange} required/>
+                <FormInput label="Author" name="author" type="text" value={writer.author} onchange={handleChange} placeholder="Enter author name" required/>
+                <FormInput label="Title" name="title" type="text" value={writer.title} onchange={handleChange} placeholder="Enter article title" required/>
+                <FormMultiText label="Article" name="content" value={writer.content} onchange={handleChange} placeholder="Write your article here..." required/>
 
-                {errormsg ? <p className='text-center text-yellow-500 my-3'>{errormsg}</p> : loading ? <p className='text-center text-white my-3'>Loading...</p> : error ? <p className='text-center text-yellow-500 my-3'>{error}</p> : article }
+                {loading ? <p className='text-center text-white my-3'>Loading...</p> : error ? <p className='text-center text-red-400 my-3'>{error}</p> : article && <p className='text-center text-white my-3'>Article saved</p>}
 
-                <button type="submit" className="btn bg-indigo-600 hover:bg-indigo-500">Save</button>
+                <button type="submit" className="btn">Save</button>
+                <button className='btn bg-red-600 hover:bg-red-500 ml-3' onClick={handleLogout}>Log Out</button>
             </form>
 
             <div className='hidden animate__animated animate__lightSpeedInRight animate__slow md:block md:w-1/2'>

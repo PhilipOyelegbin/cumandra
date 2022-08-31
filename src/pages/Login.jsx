@@ -1,39 +1,42 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { FormInput } from '../components/FormEntry';
 import signin from '../assets/signin.png';
 
 const Login = () => {
-    // a state for showing error
-    const [input_error, setInput_error] = useState('');
+    // a state for showing loading process
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [show, setShow] = useState(false);
     const [values, setValues] = useState({username: '', password: ''});
     
-    const [data, setData] = useState({username: '', password: ''});
+    const [data, setData] = useState(null);
 
     const formAttributes = [
-        {id: 1, label: "Username", name: "username", type: "text", placeholder: "Enter username"},
-        {id: 2, label: "Password", name: "password", type: (`${show ? "text" : "password"}`), placeholder: "xxxxxx"}
+        {id: 1, label: "Username", name: "username", type: "text", placeholder: "Enter username", required: "required"},
+        {id: 2, label: "Password", name: "password", type: (`${show ? "text" : "password"}`), placeholder: "xxxxxx", required: "required"}
     ];
 
     useEffect(() => {
         document.title = "Cumandra - Login Page"
-        fetch("https://api.steinhq.com/v1/storages/6308a9527bccea08c11432cb/Sheet1")
-            .then(res => res.json())
-            .then(data => data.map(obj => setData(obj)))
-            .catch(err => err)
     }, []);
 
     const navigate = useNavigate()
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (data?.username !== values.username || data?.password !== values.password) {
-            setInput_error('Data does not match, Please register!')
-        } else {
-            sessionStorage.setItem('username', values.username);
-            navigate('/create');
-        }
+        setLoading(true);
+        const logData = async () => {
+            try {
+                let user = {username: values.username, password: values.password};
+                await axios.post("https://cumandra-api.herokuapp.com/login/", user);
+                setLoading(false); setData(user); sessionStorage.setItem('username', values.username); navigate('/create');
+            } catch (error) {
+                setLoading(false); error?.message && setError("Unable to login user");
+            }
+        };
+        logData();
     };
 
     const handleChange = (e) => {
@@ -57,12 +60,12 @@ const Login = () => {
                 {formAttributes?.map(obj => (
                     <FormInput key={obj.id} {...obj} value={values[obj.name]} onchange={handleChange}/>
                 ))}
-                <div className='flex items-center gap-1'>
+                <div className='flex items-center gap-1 my-2'>
                     <input className='w-5 h-5' type="checkbox" name="show" onClick={() => setShow(prev => !prev)} />
                     <label htmlFor="show">Show password</label>
                 </div>
 
-                <p className='text-xl text-center text-red-900 font-bold my-5'>{input_error}</p>
+                {loading ? <p className='text-center text-white my-3'>Loading...</p> : error ? <p className='text-center text-red-400 my-3'>{error}</p> : data }
                     
                 <button type='submit' className='btn'>Sign In</button>
 
