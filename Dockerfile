@@ -29,7 +29,8 @@ RUN composer install \
     --no-progress \
     --prefer-dist \
     --optimize-autoloader \
-    --classmap-authoritative
+    --classmap-authoritative \
+    --no-scripts
 
 #-------------------------
 # Production image
@@ -60,5 +61,6 @@ RUN php -v
 RUN php -m
 RUN ls -la /var/www/html/vendor
 RUN php artisan --version
+RUN php artisan package:discover --ansi
 
 CMD ["/start.sh"]
