@@ -31,9 +31,13 @@ ENV RUN_SCRIPTS=1
 ENV REAL_IP_HEADER=1
 
 ENV APP_ENV=production
-ENV APP_DEBUG=false
+ENV APP_DEBUG=true
 ENV LOG_CHANNEL=stderr
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
+
+RUN php -v
+RUN php -m
+RUN php artisan --version
 
 CMD ["/start.sh"]
