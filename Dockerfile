@@ -74,7 +74,7 @@ COPY --from=frontend /app/public/build /var/www/html/public/build
 #==========================================
 RUN rm -f /etc/nginx/sites-enabled/default
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY conf/nginx/nginx-site.conf /etc/nginx/conf.d/default.conf
 
 #==========================================
 # Permissions
