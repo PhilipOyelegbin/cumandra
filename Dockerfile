@@ -1,38 +1,39 @@
-FROM php:8.5-cli
+#-------------------------
+# Frontend build
+#-------------------------
+
+FROM node:22-bookworm AS frontend
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    unzip \
-    zip \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+COPY package*.json ./
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-COPY package*.json composer.json composer.lock ./
-
-RUN npm ci --no-audit --no-fund
-
-RUN composer install \
-    --no-interaction \
-    --no-progress \
-    --prefer-dist \
-    --optimize-autoloader \
-    --classmap-authoritative \
-    --no-scripts
+RUN npm ci --ignore-scripts --no-audit --no-fund
 
 COPY . .
 
 RUN npm run build
 
-RUN composer dump-autoload \
-    --optimize \
-    --classmap-authoritative
+#-------------------------
+# Laravel + Nginx + PHP-FPM
+#-------------------------
 
-EXPOSE 8000
+FROM richarvey/nginx-php-fpm:3.1.6
 
-CMD ["composer", "run", "dev"]
+COPY . .
+
+COPY --from=frontend /app/public/build /var/www/html/public/build
+
+ENV SKIP_COMPOSER=1
+ENV WEBROOT=/var/www/html/public
+ENV PHP_ERRORS_STDERR=1
+ENV RUN_SCRIPTS=1
+ENV REAL_IP_HEADER=1
+
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+ENV LOG_CHANNEL=stderr
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+CMD ["/start.sh"]
