@@ -22,5 +22,8 @@
         <main>
             {{ $slot }}
         </main>
+        <footer class="text-center pb-10 px-6 md:px-10">
+            <p>&copy; {{ date('Y') }} Cumandra. All rights reserved.</p>
+        </footer>
     </body>
 </html>

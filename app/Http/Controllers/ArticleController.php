@@ -10,54 +10,57 @@ class ArticleController extends Controller
 {
     public function __construct(
         private $apiUrl = 'https://noozra.com/api',
-        private $cacheKey = 'articles',
+        private $cacheKey = 'cumandra',
     ) {}
 
     public function home()
     {
-        if (Redis::exists($this->cacheKey)) {
-            $articles = json_decode(Redis::get("$this->cacheKey-home"), true);
+        if (Redis::exists("$this->cacheKey-home")) {
+            $result = json_decode(Redis::get("$this->cacheKey-home"), true);
         } else {
-            $techData = Http::get("$this->apiUrl/articles?category=tech&limit=3");
-            $tech = $techData->json();
-            $sportData = Http::get("$this->apiUrl/articles?category=sports&limit=1");
-            $sport = $sportData->json();
-            $financeData = Http::get("$this->apiUrl/articles?category=finance&limit=3");
-            $finance = $financeData->json();
-            $articles = array_merge([
-                'tech' => $tech,
-                'sports' => $sport,
-                'finance' => $finance,
+            $tech = Http::get("$this->apiUrl/articles?category=tech&limit=3");
+            $sport = Http::get("$this->apiUrl/articles?category=sports&limit=1");
+            $finance = Http::get("$this->apiUrl/articles?category=finance&limit=3");
+            $result = array_merge([
+                'tech' => $tech->json(),
+                'sports' => $sport->json(),
+                'finance' => $finance->json(),
             ]);
-            Redis::set("$this->cacheKey-home", json_encode($articles));
+            Redis::set("$this->cacheKey-home", json_encode($result));
         }
 
-        return view('welcome', compact('articles'));
+        return view('welcome', compact('result'));
     }
 
-    public function cartegories(Request $request)
+    public function articles()
     {
-        if (Redis::exists($this->cacheKey)) {
-            $cartegories = json_decode(Redis::get("$this->cacheKey-cartegories"), true);
+        if (Redis::exists("$this->cacheKey-articles")) {
+            $result = json_decode(Redis::get("$this->cacheKey-articles"), true);
         } else {
-            $response = Http::get("$this->apiUrl/category");
-            $cartegories = $response->json();
-            Redis::set("$this->cacheKey-cartegories", json_encode($cartegories));
+            $categories = Http::get("$this->apiUrl/categories");
+            $articles = Http::get("$this->apiUrl/articles");
+            $result = array_merge([
+                'categories' => $categories->json(),
+                'articles' => $articles->json(),
+            ]);
+            Redis::set("$this->cacheKey-articles", json_encode($result));
         }
 
-        return view('articles', compact('cartegories'));
+        return view('articles', compact('result'));
     }
 
-    public function articles(Request $request)
+    public function filter(Request $request)
     {
-        if (Redis::exists($this->cacheKey)) {
-            $articles = json_decode(Redis::get("$this->cacheKey-articles"), true);
-        } else {
-            $response = Http::get("$this->apiUrl/articles?category={$request->query('category')}");
-            $articles = $response->json();
-            Redis::set("$this->cacheKey-articles", json_encode($articles));
-        }
+        $validatedData = $request->validate(['category' => 'string|nullable']);
 
-        return view('articles', compact('articles'));
+        $articles = Http::get("$this->apiUrl/articles", [
+            'category' => $validatedData['category'],
+        ]);
+        $result = [
+            'categories' => Http::get("$this->apiUrl/categories")->json(),
+            'articles' => $articles->json(),
+        ];
+
+        return view('articles', compact('result'));
     }
 }
