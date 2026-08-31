@@ -38,7 +38,6 @@ FROM php:8.5-fpm-bookworm
 
 WORKDIR /var/www/html
 
-# Install system dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         nginx \
@@ -50,16 +49,24 @@ RUN apt-get update \
         libicu-dev \
         libonig-dev \
         libxml2-dev \
-    && docker-php-ext-install -j"$(nproc)" \
-        pdo \
-        pdo_pgsql \
-        mbstring \
-        bcmath \
-        intl \
-        opcache \
-        zip \
-        xml \
     && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install pdo
+
+RUN docker-php-ext-install pdo_pgsql
+
+RUN docker-php-ext-install mbstring
+
+RUN docker-php-ext-install bcmath
+
+RUN docker-php-ext-install intl
+
+RUN docker-php-ext-install opcache
+
+RUN docker-php-ext-install zip
+
+RUN docker-php-ext-install xml
+
 
 #==========================================
 # Laravel application
