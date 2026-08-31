@@ -63,6 +63,9 @@ RUN docker-php-ext-install -j"$(nproc)" \
     zip \
     xml
 
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
 # Verify PHP
 RUN php -v \
     && php -m
