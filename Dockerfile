@@ -51,22 +51,19 @@ RUN apt-get update \
         libxml2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo
+RUN docker-php-ext-install \
+    pdo_pgsql \
+    mbstring \
+    bcmath \
+    intl \
+    zip \
+    xml
 
-RUN docker-php-ext-install pdo_pgsql
+RUN php -m | grep -i opcache
 
-RUN docker-php-ext-install mbstring
+RUN docker-php-ext-enable opcache
 
-RUN docker-php-ext-install bcmath
-
-RUN docker-php-ext-install intl
-
-RUN docker-php-ext-install opcache
-
-RUN docker-php-ext-install zip
-
-RUN docker-php-ext-install xml
-
+COPY conf/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 #==========================================
 # Laravel application
