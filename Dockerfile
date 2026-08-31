@@ -100,7 +100,7 @@ ENV LOG_CHANNEL=stderr
 #==========================================
 # Startup script
 #==========================================
-COPY docker/start.sh /start.sh
+COPY conf/start.sh /start.sh
 
 RUN chmod +x /start.sh
 
