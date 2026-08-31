@@ -19,10 +19,22 @@ class ArticleController extends Controller
             $result = json_decode(Redis::get("$this->cacheKey-home"), true);
         } else {
             $tech = Http::timeout(10)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 ...',
+                    'Accept' => 'application/json',
+                ])
                 ->get("$this->apiUrl/articles?category=tech&limit=3")->throw();
             $sport = Http::timeout(10)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 ...',
+                    'Accept' => 'application/json',
+                ])
                 ->get("$this->apiUrl/articles?category=sports&limit=1")->throw();
             $finance = Http::timeout(10)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 ...',
+                    'Accept' => 'application/json',
+                ])
                 ->get("$this->apiUrl/articles?category=finance&limit=3")->throw();
             $result = array_merge([
                 'tech' => $tech->json(),
