@@ -15,19 +15,19 @@ class ArticleController extends Controller
 
     public function home()
     {
-        // if (Redis::exists("$this->cacheKey-home")) {
-        //     $result = json_decode(Redis::get("$this->cacheKey-home"), true);
-        // } else {
-        $tech = Http::get("$this->apiUrl/articles?category=tech&limit=3");
-        $sport = Http::get("$this->apiUrl/articles?category=sports&limit=1");
-        $finance = Http::get("$this->apiUrl/articles?category=finance&limit=3");
-        $result = array_merge([
-            'tech' => $tech->json(),
-            'sports' => $sport->json(),
-            'finance' => $finance->json(),
-        ]);
-        // Redis::set("$this->cacheKey-home", json_encode($result));
-        // }
+        if (Redis::exists("$this->cacheKey-home")) {
+            $result = json_decode(Redis::get("$this->cacheKey-home"), true);
+        } else {
+            $tech = Http::get("$this->apiUrl/articles?category=tech&limit=3");
+            $sport = Http::get("$this->apiUrl/articles?category=sports&limit=1");
+            $finance = Http::get("$this->apiUrl/articles?category=finance&limit=3");
+            $result = array_merge([
+                'tech' => $tech->json(),
+                'sports' => $sport->json(),
+                'finance' => $finance->json(),
+            ]);
+            Redis::set("$this->cacheKey-home", json_encode($result));
+        }
 
         return view('welcome', compact('result'));
     }
