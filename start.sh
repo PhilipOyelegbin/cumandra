@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 
-docker build -f Dockerfile -t cumandra:1.0 .
+docker build -f Dockerfile -t cumandra:latest .
 
 docker run --rm \
-  -p 8080:8000 \
+  -p 8080:80 \
   --env-file .env \
-  cumandra:1.0 -d
+  cumandra:latest -d

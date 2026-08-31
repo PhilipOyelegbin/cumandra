@@ -80,6 +80,11 @@ COPY --from=composer /app/vendor /var/www/html/vendor
 
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
+RUN composer dump-autoload \
+    --no-dev \
+    --optimize \
+    --classmap-authoritative
+
 
 #-------------------------
 # Nginx configuration
