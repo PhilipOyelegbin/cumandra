@@ -39,25 +39,26 @@ FROM php:8.5-fpm-bookworm
 WORKDIR /var/www/html
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    nginx \
-    git \
-    unzip \
-    zip \
-    libpq-dev \
-    libzip-dev \
-    libicu-dev \
-    libonig-dev \
-    libxml2-dev \
-    && docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    mbstring \
-    bcmath \
-    intl \
-    opcache \
-    zip \
-    xml \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        nginx \
+        git \
+        unzip \
+        zip \
+        libpq-dev \
+        libzip-dev \
+        libicu-dev \
+        libonig-dev \
+        libxml2-dev \
+    && docker-php-ext-install -j"$(nproc)" \
+        pdo \
+        pdo_pgsql \
+        mbstring \
+        bcmath \
+        intl \
+        opcache \
+        zip \
+        xml \
     && rm -rf /var/lib/apt/lists/*
 
 #==========================================
