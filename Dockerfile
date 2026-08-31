@@ -32,6 +32,12 @@ RUN composer install \
     --classmap-authoritative \
     --no-scripts
 
+COPY . .
+
+RUN composer dump-autoload \
+    --no-dev \
+    --optimize \
+    --classmap-authoritative
 
 #-------------------------
 # PHP 8.4 + Nginx
@@ -80,10 +86,9 @@ COPY --from=composer /app/vendor /var/www/html/vendor
 
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
-RUN composer dump-autoload \
-    --no-dev \
-    --optimize \
-    --classmap-authoritative
+# Verify Composer can resolve it
+RUN test -f /var/www/html/app/Http/Controllers/ArticleController.php
+RUN php -r "require '/var/www/html/vendor/autoload.php'; var_dump(class_exists('App\\\\Http\\\\Controllers\\\\ArticleController'));"
 
 
 #-------------------------
