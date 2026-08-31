@@ -1,5 +1,4 @@
 <x-layout>
-    {{ dd($result) }}
     @if(data_get($result, 'tech.error') || data_get($result, 'sports.error') || data_get($result, 'finance.error'))
         <div class="bg-softRed text-secondary dark:text-primary p-4 text-center">
             <p class="font-semibold">

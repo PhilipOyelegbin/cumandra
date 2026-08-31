@@ -15,54 +15,25 @@ class ArticleController extends Controller
 
     public function home()
     {
-        $tech = Http::get("$this->apiUrl/articles?category=tech&limit=3");
-        $sport = Http::get("$this->apiUrl/articles?category=sports&limit=1");
-        $finance = Http::get("$this->apiUrl/articles?category=finance&limit=3");
+        if (Redis::exists("$this->cacheKey-home")) {
+            $result = json_decode(Redis::get("$this->cacheKey-home"), true);
+        } else {
+            $tech = Http::timeout(10)
+                ->get("$this->apiUrl/articles?category=tech&limit=3")->throw();
+            $sport = Http::timeout(10)
+                ->get("$this->apiUrl/articles?category=sports&limit=1")->throw();
+            $finance = Http::timeout(10)
+                ->get("$this->apiUrl/articles?category=finance&limit=3")->throw();
+            $result = array_merge([
+                'tech' => $tech->json(),
+                'sports' => $sport->json(),
+                'finance' => $finance->json(),
+            ]);
+            Redis::set("$this->cacheKey-home", json_encode($result));
+        }
 
-        dd([
-            'apiUrl' => $this->apiUrl,
-
-            'tech' => [
-                'status' => $tech->status(),
-                'successful' => $tech->successful(),
-                'body' => $tech->body(),
-                'json' => $tech->json(),
-            ],
-
-            'sports' => [
-                'status' => $sport->status(),
-                'successful' => $sport->successful(),
-                'body' => $sport->body(),
-                'json' => $sport->json(),
-            ],
-
-            'finance' => [
-                'status' => $finance->status(),
-                'successful' => $finance->successful(),
-                'body' => $finance->body(),
-                'json' => $finance->json(),
-            ],
-        ]);
+        return view('welcome', compact('result'));
     }
-
-    // public function home()
-    // {
-    //     if (Redis::exists("$this->cacheKey-home")) {
-    //         $result = json_decode(Redis::get("$this->cacheKey-home"), true);
-    //     } else {
-    //         $tech = Http::get("$this->apiUrl/articles?category=tech&limit=3");
-    //         $sport = Http::get("$this->apiUrl/articles?category=sports&limit=1");
-    //         $finance = Http::get("$this->apiUrl/articles?category=finance&limit=3");
-    //         $result = array_merge([
-    //             'tech' => $tech->json(),
-    //             'sports' => $sport->json(),
-    //             'finance' => $finance->json(),
-    //         ]);
-    //         Redis::set("$this->cacheKey-home", json_encode($result));
-    //     }
-
-    //     return view('welcome', compact('result'));
-    // }
 
     public function articles()
     {
