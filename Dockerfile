@@ -90,7 +90,6 @@ COPY --from=frontend /app/public/build /var/www/html/public/build
 RUN test -f /var/www/html/app/Http/Controllers/ArticleController.php
 RUN php -r "require '/var/www/html/vendor/autoload.php'; var_dump(class_exists('App\\\\Http\\\\Controllers\\\\ArticleController'));"
 
-
 #-------------------------
 # Nginx configuration
 #-------------------------
