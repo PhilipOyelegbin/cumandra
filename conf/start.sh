@@ -1,20 +1,28 @@
 #!/bin/sh
+
 set -e
 
-echo "Starting Laravel application..."
+echo "Starting Laravel..."
 
-# Ensure Laravel can write to required directories
+# Make sure Laravel directories are writable
 chown -R www-data:www-data \
     /var/www/html/storage \
     /var/www/html/bootstrap/cache
 
-# Cache Laravel configuration/routes/views for production
+# Laravel production caches
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+echo "Starting PHP-FPM..."
+
 # Start PHP-FPM in the background
 php-fpm -D
 
-# Start Nginx in the foreground
+# Verify PHP-FPM is running
+sleep 1
+
+echo "Starting Nginx..."
+
+# Nginx must remain in foreground
 exec nginx -g "daemon off;"
